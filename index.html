@@ -1,0 +1,221 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Cow Health Monitoring</title>
+    <style>
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            margin: 0;
+            padding: 0;
+            background-color: #f0f2f5;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+        }
+        h1 {
+            margin-top: 20px;
+            font-size: 2rem;
+            color: #34495e;
+        }
+        .container {
+            max-width: 900px;
+            width: 100%;
+            padding: 20px;
+            background-color: #ffffff;
+            border-radius: 15px;
+            box-shadow: 0px 4px 10px rgba(0, 0, 0, 0.1);
+            margin: 20px auto;
+        }
+        form {
+            display: flex;
+            flex-direction: column;
+            gap: 15px;
+        }
+        label {
+            font-weight: 600;
+            color: #2c3e50;
+        }
+        input, select, textarea {
+            padding: 12px;
+            border: 1px solid #ccc;
+            border-radius: 8px;
+            font-size: 16px;
+            width: 100%;
+        }
+        textarea {
+            resize: vertical;
+        }
+        button {
+            padding: 12px;
+            background-color: #1abc9c;
+            color: white;
+            border: none;
+            border-radius: 8px;
+            font-size: 16px;
+            cursor: pointer;
+        }
+        button:hover {
+            background-color: #16a085;
+        }
+        #clearDataBtn {
+            background-color: #e74c3c;
+            margin-top: 10px;
+        }
+        #clearDataBtn:hover {
+            background-color: #c0392b;
+        }
+        #dataTable {
+            margin-top: 30px;
+        }
+        table {
+            width: 100%;
+            border-collapse: collapse;
+        }
+        th, td {
+            padding: 15px;
+            text-align: left;
+            border-bottom: 1px solid #ddd;
+        }
+        th {
+            background-color: #1abc9c;
+            color: white;
+        }
+        td {
+            background-color: #f9f9f9;
+        }
+        td, th {
+            border-radius: 8px;
+        }
+    </style>
+</head>
+<body>
+
+    <h1>Cow Health Monitoring</h1>
+
+    <div class="container">
+        <form id="cowHealthForm">
+            <label for="cowId">Cow ID</label>
+            <input type="text" id="cowId" placeholder="Enter Cow ID" required>
+
+            <label for="temperature">Body Temperature (°C)</label>
+            <input type="text" id="temperature" placeholder="Enter Body Temperature">
+
+            <label for="heartRate">Heart Rate (bpm)</label>
+            <input type="number" id="heartRate" placeholder="Enter Heart Rate" required>
+
+            <label for="milkProduction">Milk Production (liters)</label>
+            <input type="number" id="milkProduction" placeholder="Enter Milk Production" required>
+
+            <label for="activity">Activity Level</label>
+            <select id="activity" required>
+                <option value="Low">Low</option>
+                <option value="Moderate">Moderate</option>
+                <option value="High">High</option>
+            </select>
+
+            <label for="note">Note</label>
+            <textarea id="note" placeholder="Enter any additional notes or observations" rows="3"></textarea>
+
+            <button type="submit">Add Health Data</button>
+        </form>
+
+        <button id="clearDataBtn">Clear All Data</button>
+    </div>
+
+    <div class="container" id="dataTable">
+        <h2>Recently Added Data</h2>
+        <table>
+            <thead>
+                <tr>
+                    <th>Cow ID</th>
+                    <th>Body Temperature (°C)</th>
+                    <th>Heart Rate (bpm)</th>
+                    <th>Milk Production (liters)</th>
+                    <th>Activity</th>
+                    <th>Note</th>
+                    <th>Timestamp</th>
+                </tr>
+            </thead>
+            <tbody id="dataBody">
+                <!-- Data will be dynamically inserted here -->
+            </tbody>
+        </table>
+    </div>
+
+    <script>
+        const form = document.getElementById('cowHealthForm');
+        const dataBody = document.getElementById('dataBody');
+        const clearDataBtn = document.getElementById('clearDataBtn');
+
+        // Load stored data on page load
+        window.onload = function() {
+            loadData();
+        }
+
+        // Add event listener for form submission
+        form.addEventListener('submit', function(event) {
+            event.preventDefault();
+            const cowId = document.getElementById('cowId').value;
+            const temperature = document.getElementById('temperature').value;
+            const heartRate = document.getElementById('heartRate').value;
+            const milkProduction = document.getElementById('milkProduction').value;
+            const activity = document.getElementById('activity').value;
+            const note = document.getElementById('note').value;
+            const timestamp = new Date().toLocaleString();
+
+            const cowData = {
+                cowId,
+                temperature,
+                heartRate,
+                milkProduction,
+                activity,
+                note,
+                timestamp
+            };
+
+            addDataToTable(cowData);
+            storeData(cowData);
+            form.reset();
+        });
+
+        // Function to add data to the table
+        function addDataToTable(cowData) {
+            const row = document.createElement('tr');
+            row.innerHTML = `
+                <td>${cowData.cowId}</td>
+                <td>${cowData.temperature}</td>
+                <td>${cowData.heartRate}</td>
+                <td>${cowData.milkProduction}</td>
+                <td>${cowData.activity}</td>
+                <td>${cowData.note}</td>
+                <td>${cowData.timestamp}</td>
+            `;
+            dataBody.appendChild(row);
+        }
+
+        // Function to store data in localStorage
+        function storeData(cowData) {
+            let storedData = JSON.parse(localStorage.getItem('cowHealthData')) || [];
+            storedData.push(cowData);
+            localStorage.setItem('cowHealthData', JSON.stringify(storedData));
+        }
+
+        // Function to load data from localStorage
+        function loadData() {
+            const storedData = JSON.parse(localStorage.getItem('cowHealthData')) || [];
+            storedData.forEach(addDataToTable);
+        }
+
+        // Function to clear all data
+        clearDataBtn.addEventListener('click', function() {
+            if (confirm("Are you sure you want to clear all data?")) {
+                localStorage.removeItem('cowHealthData');
+                dataBody.innerHTML = ''; // Clear table body
+            }
+        });
+    </script>
+
+</body>
+</html>
